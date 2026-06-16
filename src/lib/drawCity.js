@@ -45,7 +45,8 @@ export function drawCity(canvas, graph, path = [], source = 0, target = -1) {
       ctx.moveTo(scaleX(pos[u][0]), scaleY(pos[u][1]))
       ctx.lineTo(scaleX(pos[v][0]), scaleY(pos[v][1]))
       if (onPath) {
-        ctx.strokeStyle = '#1D9E75'
+        const de = elev[v] - elev[u]
+        ctx.strokeStyle = de > 10 ? '#EF4444' : de > 2 ? '#F59E0B' : '#1D9E75'
         ctx.lineWidth = 2.8
         ctx.globalAlpha = 1
       } else {

@@ -20,18 +20,26 @@ export default function App() {
     }}>
 
       {/* ── Header ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: '1.5rem' }}>
         <div style={{
-          width: 38, height: 38, borderRadius: 10,
-          background: '#1D9E75',
+          width: 42, height: 42, borderRadius: 12,
+          background: 'linear-gradient(135deg, #1D9E75, #0F6E56)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 20,
+          fontSize: 22, flexShrink: 0,
+          boxShadow: '0 2px 8px rgba(29,158,117,0.3)',
         }}>🌿</div>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 500, margin: 0, letterSpacing: '-0.01em' }}>GreenPath</h1>
-          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontSize: 21, fontWeight: 700, margin: 0, letterSpacing: '-0.02em' }}>GreenPath</h1>
+          <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)', marginTop: 1 }}>
             Eco-friendly delivery router · Dijkstra vs Bellman-Ford · EF234405 DAA Final
           </p>
+        </div>
+        <div style={{
+          fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)',
+          background: 'var(--surface)', padding: '5px 10px', borderRadius: 8,
+          border: '0.5px solid var(--border)', lineHeight: 1.6,
+        }}>
+          <span style={{ color: 'var(--text)' }}>w</span> = dist·traffic + max(0, Δelev)²
         </div>
       </div>
 

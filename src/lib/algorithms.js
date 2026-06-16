@@ -35,9 +35,10 @@ export function reconstructPath(prev, src, tgt) {
  *
  * @param {{ N: number, adj: [number,number][][] }} graph
  * @param {number} source
+ * @param {number} [target=-1]  When given, stops as soon as target is settled.
  * @returns {{ dist: Float64Array, prev: Int32Array, comparisons: number }}
  */
-export function dijkstra(graph, source) {
+export function dijkstra(graph, source, target = -1) {
   const { N, adj } = graph
   const dist = new Float64Array(N).fill(INF)
   const prev = new Int32Array(N).fill(-1)
@@ -52,6 +53,8 @@ export function dijkstra(graph, source) {
     const [d, u] = heap.pop()
     if (visited[u]) continue
     visited[u] = 1
+    // Once target is settled its dist is final — no need to explore further.
+    if (u === target) break
 
     for (const [v, w] of adj[u]) {
       comparisons++
@@ -89,9 +92,18 @@ export function bellmanFord(graph, source) {
 
   dist[source] = 0
 
+  // Shuffle edge order so BF doesn't benefit from the generator's left→right
+  // insertion order, which would make it artificially converge in 1–2 passes.
+  const order = Uint32Array.from({ length: edges.length }, (_, i) => i)
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = (Math.random() * (i + 1)) | 0
+    const tmp = order[i]; order[i] = order[j]; order[j] = tmp
+  }
+
   for (let iter = 0; iter < N - 1; iter++) {
     let relaxed = false
-    for (const [u, v, w] of edges) {
+    for (let k = 0; k < order.length; k++) {
+      const [u, v, w] = edges[order[k]]
       comparisons++
       if (dist[u] < INF) {
         const t = dist[u] + w
@@ -112,7 +124,7 @@ export function bellmanFord(graph, source) {
 /** @returns {{ cost: number, path: number[], timeMs: number, comparisons: number }} */
 export function dijkstraQuery(graph, source, target) {
   const t0 = performance.now()
-  const { dist, prev, comparisons } = dijkstra(graph, source)
+  const { dist, prev, comparisons } = dijkstra(graph, source, target)
   const timeMs = performance.now() - t0
   const cost = dist[target]
   const path = cost < INF ? reconstructPath(prev, source, target) : []

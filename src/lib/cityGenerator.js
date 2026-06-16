@@ -60,15 +60,19 @@ export function generateCity(n, seed = 42) {
 
   const adj = Array.from({ length: N }, () => [])
   const edges = []
+  const edgeMeta = new Map()
 
   const addEdge = (u, v) => {
     const [x1, y1] = pos[u], [x2, y2] = pos[v]
     const dist = hypot2d(x1, y1, x2, y2)
     const tm = lognorm(rng)
     const de = elev[v] - elev[u]
-    const w = dist * tm + Math.max(0, de) ** 2
+    const distCost  = dist * tm
+    const slopeCost = Math.max(0, de) ** 2
+    const w = distCost + slopeCost
     adj[u].push([v, w])
     edges.push([u, v, w])
+    edgeMeta.set(u * N + v, { distCost, slopeCost })
   }
 
   // Grid edges (N/S/E/W) — bidirectional as two directed edges
@@ -92,7 +96,7 @@ export function generateCity(n, seed = 42) {
     added++
   }
 
-  return { N, side, pos, elev, adj, edges }
+  return { N, side, pos, elev, adj, edges, edgeMeta }
 }
 
 export const BENCHMARK_SIZES = [100, 500, 1000, 2500, 5000, 10000]
