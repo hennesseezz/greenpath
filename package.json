@@ -1,7 +1,7 @@
 {
   "name": "greenpath-web",
   "version": "1.0.0",
-  "description": "GreenPath — Eco-Friendly Delivery Router (DAA Final Exam)",
+  "description": "GreenPath - Eco-Friendly Delivery Router (DAA Final Exam)",
   "type": "module",
   "scripts": {
     "dev": "vite",

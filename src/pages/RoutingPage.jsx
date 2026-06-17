@@ -4,22 +4,22 @@ import { dijkstraQuery, bellmanFordQuery } from '../lib/algorithms.js'
 import { drawCity } from '../lib/drawCity.js'
 
 const CITY_SIZES = [
-  { label: '64 nodes (8×8)',      value: 64   },
-  { label: '100 nodes (10×10)',   value: 100  },
-  { label: '225 nodes (15×15)',   value: 225  },
-  { label: '400 nodes (20×20)',   value: 400  },
+  { label: '64 nodes (8×8)', value: 64 },
+  { label: '100 nodes (10×10)', value: 100 },
+  { label: '225 nodes (15×15)', value: 225 },
+  { label: '400 nodes (20×20)', value: 400 },
   { label: '1 024 nodes (32×32)', value: 1024 },
 ]
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const C_DIJKSTRA = '#1D9E75'
-const C_BF       = '#E65100'
-const C_DIST     = '#3B82F6'
-const C_SLOPE    = '#F59E0B'
+const C_BF = '#E65100'
+const C_DIST = '#3B82F6'
+const C_SLOPE = '#F59E0B'
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function StatChip({ label, value, color }) {
+function StatChip({ label, value, color, description }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       <span style={{
@@ -30,6 +30,11 @@ function StatChip({ label, value, color }) {
         fontSize: 18, fontWeight: 500, color: color || 'var(--text)',
         fontVariantNumeric: 'tabular-nums', lineHeight: 1,
       }}>{value}</span>
+      {description && (
+        <span style={{ fontSize: 9, color: 'var(--text-muted)', lineHeight: 1.2 }}>
+          {description}
+        </span>
+      )}
     </div>
   )
 }
@@ -43,7 +48,7 @@ function MatchBadge({ match }) {
       background: match ? '#E1F5EE' : '#FCEBEB',
       color: match ? '#0F6E56' : '#A32D2D',
     }}>
-      {match ? '✓ Agreed' : '✗ Mismatch'}
+      {match ? '✓ Match' : '✗ Mismatch'}
     </span>
   )
 }
@@ -93,17 +98,17 @@ function ElevProfile({ data }) {
         <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
           stroke={s.color} strokeWidth={2.2} strokeLinecap="round" />
       ))}
-      <circle cx={px(0)}              cy={py(data[0])}              r={3.5} fill="#185FA5" />
+      <circle cx={px(0)} cy={py(data[0])} r={3.5} fill="#185FA5" />
       <circle cx={px(data.length - 1)} cy={py(data[data.length - 1])} r={3.5} fill="#D85A30" />
-      <text x={px(0)}               y={H - 2} textAnchor="middle" fontSize={9} fill="rgba(128,128,128,0.7)">S</text>
+      <text x={px(0)} y={H - 2} textAnchor="middle" fontSize={9} fill="rgba(128,128,128,0.7)">S</text>
       <text x={px(data.length - 1)} y={H - 2} textAnchor="middle" fontSize={9} fill="rgba(128,128,128,0.7)">T</text>
     </svg>
   )
 }
 
 function CO2Bar({ distCO2, slopeCO2 }) {
-  const total    = (distCO2 || 0) + (slopeCO2 || 0)
-  const distPct  = total > 0 ? (distCO2 / total) * 100 : 50
+  const total = (distCO2 || 0) + (slopeCO2 || 0)
+  const distPct = total > 0 ? (distCO2 / total) * 100 : 50
   const slopePct = total > 0 ? (slopeCO2 / total) * 100 : 50
 
   const fmt = v => v != null ? v.toFixed(1) : '—'
@@ -121,8 +126,8 @@ function CO2Bar({ distCO2, slopeCO2 }) {
       {/* Labels */}
       <div style={{ display: 'flex', gap: 20 }}>
         {[
-          { color: C_DIST,  label: 'Distance', value: distCO2,  pct: distPct  },
-          { color: C_SLOPE, label: 'Slope',    value: slopeCO2, pct: slopePct },
+          { color: C_DIST, label: 'Distance', value: distCO2, pct: distPct },
+          { color: C_SLOPE, label: 'Slope', value: slopeCO2, pct: slopePct },
         ].map(({ color, label, value, pct }) => (
           <div key={label}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
@@ -142,17 +147,17 @@ function CO2Bar({ distCO2, slopeCO2 }) {
 
 export default function RoutingPage() {
   const canvasRef = useRef(null)
-  const graphRef  = useRef(null)
+  const graphRef = useRef(null)
 
   const [citySize, setCitySize] = useState(100)
-  const [seed, setSeed]         = useState(42)
-  const [srcNode, setSrcNode]   = useState(0)
-  const [tgtNode, setTgtNode]   = useState(99)
-  const [loading, setLoading]   = useState(false)
-  const [log, setLog]           = useState('Configure settings and press "Find eco-route".')
+  const [seed, setSeed] = useState(42)
+  const [srcNode, setSrcNode] = useState(0)
+  const [tgtNode, setTgtNode] = useState(99)
+  const [loading, setLoading] = useState(false)
+  const [log, setLog] = useState('Configure settings and press "Find eco-route".')
 
   const [results, setResults] = useState({
-    dCost:  null, dTime:  null, dHops:  null, dComps:  null,
+    dCost: null, dTime: null, dHops: null, dComps: null,
     bfCost: null, bfTime: null, bfHops: null, bfComps: null,
     match: null, distCO2: null, slopeCO2: null, elevProfile: null,
   })
@@ -167,7 +172,7 @@ export default function RoutingPage() {
       const actualTgt = Math.min(tgt, g.N - 1)
 
       setLog(`Running algorithms on ${g.N} nodes…`)
-      const dRes  = dijkstraQuery(g, actualSrc, actualTgt)
+      const dRes = dijkstraQuery(g, actualSrc, actualTgt)
       const bfRes = bellmanFordQuery(g, actualSrc, actualTgt)
 
       const match =
@@ -185,7 +190,7 @@ export default function RoutingPage() {
       drawCity(canvasRef.current, g, dRes.path, actualSrc, actualTgt)
 
       setResults({
-        dCost:  dRes.cost,  dTime:  dRes.timeMs,  dHops:  dRes.path.length - 1,  dComps:  dRes.comparisons,
+        dCost: dRes.cost, dTime: dRes.timeMs, dHops: dRes.path.length - 1, dComps: dRes.comparisons,
         bfCost: bfRes.cost, bfTime: bfRes.timeMs, bfHops: bfRes.path.length - 1, bfComps: bfRes.comparisons,
         match, distCO2, slopeCO2,
         elevProfile: dRes.path.map(n => g.elev[n]),
@@ -218,9 +223,9 @@ export default function RoutingPage() {
 
   const hasResults = results.dCost !== null
 
-  const fmt   = v => v == null ? '—' : isFinite(v) ? v.toFixed(1) + ' g' : '∞'
+  const fmt = v => v == null ? '—' : isFinite(v) ? v.toFixed(1) + ' g' : '∞'
   const fmtMs = v => v == null ? '—' : v.toFixed(2) + ' ms'
-  const fmtN  = v => v == null || v < 0 ? '—' : v.toLocaleString()
+  const fmtN = v => v == null || v < 0 ? '—' : v.toLocaleString()
 
   const inputStyle = {
     width: '100%', padding: '7px 10px',
@@ -240,10 +245,23 @@ export default function RoutingPage() {
   }
 
   const totalCO2 = (results.distCO2 || 0) + (results.slopeCO2 || 0)
-  const speedup  = results.dTime && results.bfTime ? (results.bfTime / results.dTime).toFixed(1) : null
+  const speedup = results.dTime && results.bfTime ? (results.bfTime / results.dTime).toFixed(1) : null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+      {/* Page Description / User Guide */}
+      <div style={{
+        background: 'rgba(29, 158, 117, 0.05)',
+        borderLeft: '4px solid #1D9E75',
+        padding: '10px 14px',
+        borderRadius: '0 8px 8px 0',
+        fontSize: 13,
+        lineHeight: 1.5,
+        color: 'var(--text-muted)'
+      }}>
+        <strong>Delivery Route Simulation:</strong> Enter the source (S) and target (T) nodes in the left control panel, then click <strong>Find eco-route</strong> to search for the carbon-optimal delivery path (avoiding steep hills to save energy).
+      </div>
 
       {/* ── Row 1: Controls + Canvas ── */}
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
@@ -261,12 +279,42 @@ export default function RoutingPage() {
             <input type="number" value={seed} min={0} onChange={e => setSeed(+e.target.value)} style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>Source node</label>
-            <input type="number" value={srcNode} min={0} onChange={e => setSrcNode(+e.target.value)} style={inputStyle} />
+            <label style={{ ...labelStyle, color: '#185FA5', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#185FA5', display: 'inline-block' }} />
+              Source node (S)
+            </label>
+            <input
+              type="number"
+              value={srcNode}
+              min={0}
+              onChange={e => setSrcNode(+e.target.value)}
+              style={{
+                ...inputStyle,
+                borderColor: 'rgba(24, 95, 165, 0.4)',
+                outline: 'none',
+              }}
+              onFocus={e => { e.target.style.outline = '2px solid #185FA5'; e.target.style.outlineOffset = '1px'; }}
+              onBlur={e => e.target.style.outline = ''}
+            />
           </div>
           <div>
-            <label style={labelStyle}>Target node</label>
-            <input type="number" value={tgtNode} min={0} onChange={e => setTgtNode(+e.target.value)} style={inputStyle} />
+            <label style={{ ...labelStyle, color: '#D85A30', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#D85A30', display: 'inline-block' }} />
+              Target node (T)
+            </label>
+            <input
+              type="number"
+              value={tgtNode}
+              min={0}
+              onChange={e => setTgtNode(+e.target.value)}
+              style={{
+                ...inputStyle,
+                borderColor: 'rgba(216, 90, 48, 0.4)',
+                outline: 'none',
+              }}
+              onFocus={e => { e.target.style.outline = '2px solid #D85A30'; e.target.style.outlineOffset = '1px'; }}
+              onBlur={e => e.target.style.outline = ''}
+            />
           </div>
 
           <button onClick={handleRun} disabled={loading} style={{
@@ -302,7 +350,7 @@ export default function RoutingPage() {
               { color: '#D85A30', label: 'Target' },
               { color: '#5DCAA5', label: 'Path nodes' },
               { color: C_DIJKSTRA, label: 'Flat / downhill' },
-              { color: C_SLOPE,    label: 'Uphill' },
+              { color: C_SLOPE, label: 'Uphill' },
               { color: '#EF4444', label: 'Steep uphill' },
             ].map(({ color, label }) => (
               <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -342,8 +390,8 @@ export default function RoutingPage() {
                 {[
                   { color: '#60A5FA', label: 'Downhill' },
                   { color: C_DIJKSTRA, label: 'Flat' },
-                  { color: C_SLOPE,    label: 'Uphill' },
-                  { color: '#EF4444',  label: 'Steep' },
+                  { color: C_SLOPE, label: 'Uphill' },
+                  { color: '#EF4444', label: 'Steep' },
                 ].map(({ color, label }) => (
                   <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--text-muted)' }}>
                     <span style={{ width: 14, height: 2.5, background: color, display: 'inline-block', borderRadius: 2 }} />
@@ -367,10 +415,10 @@ export default function RoutingPage() {
               DIJKSTRA
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <StatChip label="CO₂ Cost"    value={fmt(results.dCost)}   color="#0F6E56" />
-              <StatChip label="Runtime"     value={fmtMs(results.dTime)} />
-              <StatChip label="Hops"        value={fmtN(results.dHops)}  />
-              <StatChip label="Comparisons" value={fmtN(results.dComps)} />
+              <StatChip label="CO₂ Cost" value={fmt(results.dCost)} color="#0F6E56" description="Total carbon emissions" />
+              <StatChip label="Runtime" value={fmtMs(results.dTime)} description="Computation time" />
+              <StatChip label="Hops" value={fmtN(results.dHops)} description="Road segments traversed" />
+              <StatChip label="Comparisons" value={fmtN(results.dComps)} description="Comparison steps" />
             </div>
           </div>
 
@@ -380,23 +428,26 @@ export default function RoutingPage() {
               BELLMAN-FORD
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <StatChip label="CO₂ Cost"    value={fmt(results.bfCost)}   color="#854F0B" />
-              <StatChip label="Runtime"     value={fmtMs(results.bfTime)} />
-              <StatChip label="Hops"        value={fmtN(results.bfHops)}  />
-              <StatChip label="Comparisons" value={fmtN(results.bfComps)} />
+              <StatChip label="CO₂ Cost" value={fmt(results.bfCost)} color="#854F0B" description="Total carbon emissions" />
+              <StatChip label="Runtime" value={fmtMs(results.bfTime)} description="Computation time" />
+              <StatChip label="Hops" value={fmtN(results.bfHops)} description="Road segments traversed" />
+              <StatChip label="Comparisons" value={fmtN(results.bfComps)} description="Comparison steps" />
             </div>
           </div>
 
           {/* Verdict */}
-          <div style={{ ...card, flex: '0 0 150px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, textAlign: 'center' }}>
+          <div style={{ ...card, flex: '0 0 160px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, textAlign: 'center' }}>
             <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-              Cost match
+              Cost Match
             </div>
             <MatchBadge match={results.match} />
+            <span style={{ fontSize: 9, color: 'var(--text-muted)', lineHeight: 1.2 }}>
+              {results.match ? 'Optimal path match' : 'Different path'}
+            </span>
             {speedup && (
-              <div style={{ marginTop: 4 }}>
-                <div style={{ fontSize: 22, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{speedup}×</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Dijkstra faster</div>
+              <div style={{ marginTop: 6, borderTop: '0.5px solid var(--border)', paddingTop: 6, width: '100%' }}>
+                <div style={{ fontSize: 20, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: '#185FA5' }}>{speedup}×</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500 }}>Dijkstra Faster</div>
               </div>
             )}
           </div>
