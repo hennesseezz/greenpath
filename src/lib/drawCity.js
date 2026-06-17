@@ -10,6 +10,23 @@
  *   Edges  — translucent gray (non-path) / solid green (on-path)
  */
 
+/**
+ * Render the city graph onto an HTML canvas element.
+ *
+ * Color encoding:
+ *   - Nodes:  teal gradient by elevation (light = low, dark = high)
+ *   - Source: blue  (#185FA5), labeled "S"
+ *   - Target: coral (#D85A30), labeled "T"
+ *   - Path nodes: bright teal (#5DCAA5)
+ *   - Path edges: green (flat/down), amber (uphill), red (steep uphill > 10 m)
+ *   - Other edges: translucent gray
+ *
+ * @param {HTMLCanvasElement} canvas  Target canvas element.
+ * @param {{ N: number, pos: number[][], elev: number[], adj: [number,number][][] }} graph
+ * @param {number[]} [path=[]]    Ordered vertex list for the highlighted route.
+ * @param {number}  [source=0]   Index of the source node.
+ * @param {number}  [target=-1]  Index of the target node; -1 = none.
+ */
 export function drawCity(canvas, graph, path = [], source = 0, target = -1) {
   if (!canvas) return
   const { N, pos, elev, adj } = graph

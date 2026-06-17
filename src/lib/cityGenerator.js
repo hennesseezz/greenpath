@@ -8,16 +8,29 @@
  * All weights are non-negative → safe for Dijkstra.
  */
 
+/**
+ * Deterministic XOR-shift pseudo-random number generator.
+ * Period 2³²−1; fully reproducible from the same seed.
+ * @param {number} seed  Unsigned 32-bit integer seed.
+ * @returns {() => number}  Function returning floats in [0, 1).
+ */
 function seededRng(seed) {
   let s = seed >>> 0
   return () => {
     s = (s ^ (s << 13)) >>> 0
     s = (s ^ (s >>> 17)) >>> 0
-    s = (s ^ (s << 5)) >>> 0
+    s = (s ^ (s << 5))  >>> 0
     return s / 4294967296
   }
 }
 
+/**
+ * Log-normal sample with median 1.0, generated via Box-Muller transform.
+ * Used to model traffic congestion multiplier on each road segment.
+ * @param {() => number} rng  Seeded RNG function returning values in [0,1).
+ * @param {number} [sigma=0.4]  Log-normal shape parameter.
+ * @returns {number}  A positive sample; typical range ~[0.5, 2.0].
+ */
 function lognorm(rng, sigma = 0.4) {
   // Box-Muller transform → log-normal with median 1.0
   const u1 = Math.max(rng(), 1e-10)
@@ -26,6 +39,12 @@ function lognorm(rng, sigma = 0.4) {
   return Math.exp(sigma * z)
 }
 
+/**
+ * Euclidean distance between two 2-D points.
+ * @param {number} x1 @param {number} y1
+ * @param {number} x2 @param {number} y2
+ * @returns {number} Distance in the same units as the coordinates.
+ */
 function hypot2d(x1, y1, x2, y2) {
   const dx = x2 - x1, dy = y2 - y1
   return Math.sqrt(dx * dx + dy * dy)
